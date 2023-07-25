@@ -88,24 +88,7 @@ pub fn statement(invoice: Invoice, plays: HashMap<String, Play>) -> Vec<String> 
             panic!("ERROR");
         };
 
-        let mut this_amount = 0;
-
-        match play.genre {
-            PlayGenre::Tragedy => {
-                this_amount = 40000;
-                if perf.audience > 30 {
-                    this_amount += 1000 * (perf.audience - 30);
-                }
-            }
-            PlayGenre::Comedy => {
-                this_amount = 30000;
-                if perf.audience > 20 {
-                    this_amount += 10000 + 500 * (perf.audience - 20);
-                }
-
-                this_amount += 300 * perf.audience;
-            }
-        }
+        let mut this_amount = amount_for(perf, play);
 
         volume_credits += cmp::max(perf.audience - 30, 0);
 
@@ -128,3 +111,59 @@ pub fn statement(invoice: Invoice, plays: HashMap<String, Play>) -> Vec<String> 
 
     result
 }
+
+fn amount_for(perf: &Performance, play: &Play) -> u32 {
+    let mut this_amount = 0;
+
+    match play.genre {
+        PlayGenre::Tragedy => {
+            this_amount = 40000;
+            if perf.audience > 30 {
+                this_amount += 1000 * (perf.audience - 30);
+            }
+        }
+        PlayGenre::Comedy => {
+            this_amount = 30000;
+            if perf.audience > 20 {
+                this_amount += 10000 + 500 * (perf.audience - 20);
+            }
+
+            this_amount += 300 * perf.audience;
+        }
+    }
+
+    this_amount
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_amount_for() {
+        let perf: Performance = Performance {
+            play_id: String::from("hamlet"),
+            audience: 55,
+        };
+
+        let play: Play = Play {
+            name: String::from("Hamlet"),
+            genre: PlayGenre::Tragedy,
+        };
+
+        assert_eq!(amount_for(&perf, &play), 65000);
+
+        let perf: Performance = Performance {
+            play_id: String::from("as-like"),
+            audience: 35,
+        };
+
+        let play: Play = Play {
+            name: String::from("As You Like It"),
+            genre: PlayGenre::Comedy,
+        };
+
+        assert_eq!(amount_for(&perf, &play), 58000);
+    }
+}
+
