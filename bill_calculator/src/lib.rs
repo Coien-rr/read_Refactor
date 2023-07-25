@@ -109,31 +109,31 @@ pub fn statement(invoice: Invoice, plays: HashMap<String, Play>) -> Vec<String> 
 }
 
 fn amount_for(perf: &Performance, play: &Play) -> u32 {
-    let mut this_amount = 0;
+    let mut result = 0;
 
     match play.genre {
         PlayGenre::Tragedy => {
-            this_amount = 40000;
+            result = 40000;
             if perf.audience > 30 {
-                this_amount += 1000 * (perf.audience - 30);
+                result += 1000 * (perf.audience - 30);
             }
         }
         PlayGenre::Comedy => {
-            this_amount = 30000;
+            result = 30000;
             if perf.audience > 20 {
-                this_amount += 10000 + 500 * (perf.audience - 20);
+                result += 10000 + 500 * (perf.audience - 20);
             }
 
-            this_amount += 300 * perf.audience;
+            result += 300 * perf.audience;
         }
     }
 
-    this_amount
+    result
 }
 
 fn play_for<'a>(perf: &Performance, plays: &'a HashMap<String, Play>) -> &'a Play {
-    if let Some(p) = plays.get(&perf.play_id) {
-        p
+    if let Some(res) = plays.get(&perf.play_id) {
+        res
     } else {
         panic!("ERROR");
     }
