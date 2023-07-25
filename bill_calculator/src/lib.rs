@@ -1,13 +1,13 @@
 use std::cmp;
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum PlayGenre {
     Tragedy,
     Comedy,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Play {
     name: String,
     genre: PlayGenre,
@@ -82,11 +82,7 @@ pub fn statement(invoice: Invoice, plays: HashMap<String, Play>) -> Vec<String> 
     result.push(String::from("Statement for {}").replace("{}", &invoice.customer));
 
     for perf in &invoice.performances {
-        let play = if let Some(p) = plays.get(&perf.play_id) {
-            p
-        } else {
-            panic!("ERROR");
-        };
+        let play = play_for(perf, &plays);
 
         let mut this_amount = amount_for(perf, play);
 
@@ -135,6 +131,14 @@ fn amount_for(perf: &Performance, play: &Play) -> u32 {
     this_amount
 }
 
+fn play_for<'a>(perf: &Performance, plays: &'a HashMap<String, Play>) -> &'a Play {
+    if let Some(p) = plays.get(&perf.play_id) {
+        p
+    } else {
+        panic!("ERROR");
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -164,6 +168,21 @@ mod tests {
         };
 
         assert_eq!(amount_for(&perf, &play), 58000);
+    }
+
+    #[test]
+    fn test_play_for() {
+        let (plays, invoices) = init();
+
+        for perf in &invoices.performances {
+            let play = if let Some(p) = plays.get(&perf.play_id) {
+                p
+            } else {
+                panic!("ERROR");
+            };
+
+            assert_eq!(play, play_for(perf, &plays));
+        }
     }
 }
 
